@@ -48,7 +48,8 @@ class RSRayPPOTrainer(RayPPOTrainer):
         from verl.trainer.ppo.reward import compute_reward, compute_reward_async
         from verl.trainer.ppo.metric_utils import compute_data_metrics, compute_timing_metrics, compute_throughout_metrics, reduce_metrics
         # from verl.trainer.ppo.ray_trainer import compute_response_mask, compute_advantage # Imported at top
-        from verl.trainer.ppo.core_algos import agg_loss, AdvantageEstimator, apply_kl_penalty
+        from verl.trainer.ppo.core_algos import agg_loss, AdvantageEstimator
+        from verl.trainer.ppo.ray_trainer import apply_kl_penalty
         from verl.utils.checkpoint.checkpoint_manager import should_save_ckpt_esi
 
         logger = Tracking(

@@ -5,7 +5,7 @@ from verl import DataProto
 from verl.single_controller.base.decorator import register, Dispatch
 from verl.utils.profiler import DistProfiler, simple_timer, reduce_timing, topk_reduce_ratio_min_max
 from verl.utils.ray_utils import get_event_loop
-from verl.utils.device import get_device_id
+from verl.utils.device import get_device_id, get_torch_device
 from verl.utils.profiler import log_gpu_memory_usage
 import logging
 

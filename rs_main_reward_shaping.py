@@ -30,6 +30,20 @@ def main(config):
     from verl.trainer.main_ppo import TaskRunner
     
     class RSTaskRunner(TaskRunner):
+        def add_actor_rollout_worker(self, config):
+            """Override to use RSActorRolloutRefWorker instead of default ActorRolloutRefWorker"""
+            from verl.single_controller.ray import RayWorkerGroup
+            from verl.workers.rs_fsdp_workers import RSActorRolloutRefWorker
+            from verl.trainer.ppo.ray_trainer import Role
+            
+            # Use our custom worker class that has generate_sequences_with_density
+            actor_rollout_cls = RSActorRolloutRefWorker
+            ray_worker_group_cls = RayWorkerGroup
+            
+            self.role_worker_mapping[Role.ActorRollout] = ray.remote(actor_rollout_cls)
+            
+            return actor_rollout_cls, ray_worker_group_cls
+        
         def run(self, config):
             # This is largely copied from `TaskRunner.run` but uses `RSRayPPOTrainer`
             # Actually `TaskRunner.run` calls `RayPPOTrainer(...)`.
@@ -79,6 +93,21 @@ def main(config):
             val_reward_fn = load_reward_manager(
                 config, tokenizer, num_examine=1, **config.reward_model.get("reward_kwargs", {})
             )
+
+            class FallbackRewardManager:
+                def __init__(self, valid_reward_fn):
+                    self.valid_reward_fn = valid_reward_fn
+                
+                def __call__(self, data, return_dict=False):
+                    if "data_source" in data.non_tensor_batch:
+                        ds = data.non_tensor_batch["data_source"]
+                        # Replace empty strings or None with 'aime'
+                        for i in range(len(ds)):
+                            if not ds[i]: # Empty string or None
+                                ds[i] = 'aime'
+                    return self.valid_reward_fn(data, return_dict)
+            
+            val_reward_fn = FallbackRewardManager(val_reward_fn)
 
             resource_pool_manager = self.init_resource_pool_mgr(config)
 
