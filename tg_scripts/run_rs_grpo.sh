@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-export VLLM_ATTENTION_BACKEND=XFORMERS
+export VLLM_ATTENTION_BACKEND=FLASH_ATTN
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -53,32 +53,32 @@ python3 rs_main_reward_shaping.py \
     actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
     actor_rollout_ref.rollout.name=vllm \
     actor_rollout_ref.rollout.temperature=0.6 \
-    actor_rollout_ref.rollout.val_temperature=0.6 \
+    actor_rollout_ref.rollout.val_kwargs.temperature=0.6 \
     actor_rollout_ref.rollout.gpu_memory_utilization=0.8 \
     actor_rollout_ref.rollout.n=16 \
-    actor_rollout_ref.rollout.n_val=16 \
+    actor_rollout_ref.rollout.val_kwargs.n=16 \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     algorithm.kl_ctrl.kl_coef=0.001 \
     trainer.critic_warmup=0 \
     trainer.logger=['console','wandb'] \
     trainer.project_name='deepscaler' \
     trainer.experiment_name='rs_grpo' \
-    trainer.n_gpus_per_node=8 \
+    trainer.n_gpus_per_node=2 \
     trainer.nnodes=1 \
     trainer.save_freq=20 \
     trainer.test_freq=20 \
     trainer.default_hdfs_dir=null \
     trainer.total_epochs=3 "${@:1}" \
-    reward_config.sigmoid_reward=False \
-    reward_config.linear_reward=True \
-    reward_config.multiplier_reward=False \
+    +reward_config.sigmoid_reward=False \
+    +reward_config.linear_reward=True \
+    +reward_config.multiplier_reward=False \
     actor_rollout_ref.rollout.enforce_eager=False \
     actor_rollout_ref.rollout.free_cache_engine=False \
-    reward_config.alpha=0.0003 \
-    algorithm.reward_shaping.window_size=10 \
-    algorithm.reward_shaping.min_windows=3 \
-    algorithm.reward_shaping.max_windows=10 \
-    algorithm.reward_shaping.alpha_pos=0.1 \
-    algorithm.reward_shaping.lambda_neg=0.1 \
-    algorithm.reward_shaping.initial_scale=2.0 \
-    algorithm.reward_shaping.final_scale=1.25
+    +reward_config.alpha=0.0003 \
+    +algorithm.reward_shaping.window_size=10 \
+    +algorithm.reward_shaping.min_windows=3 \
+    +algorithm.reward_shaping.max_windows=10 \
+    +algorithm.reward_shaping.alpha_pos=0.1 \
+    +algorithm.reward_shaping.lambda_neg=0.1 \
+    +algorithm.reward_shaping.initial_scale=2.0 \
+    +algorithm.reward_shaping.final_scale=1.25
