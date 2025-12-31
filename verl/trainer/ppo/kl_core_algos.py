@@ -5,7 +5,7 @@ from collections import defaultdict
 from typing import Optional, Tuple, List
 from verl.trainer.config import AlgoConfig
 import verl.utils.torch_functional as verl_F
-from verl.trainer.ppo.core_algos import ag_loss
+from verl.trainer.ppo.core_algos import agg_loss
 
 def select_core_windows(density_scores: torch.Tensor, window_size: int, min_windows: int, max_windows: int) -> torch.Tensor:
     """

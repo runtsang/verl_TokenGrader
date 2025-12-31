@@ -11,6 +11,18 @@ def main(config):
     from verl.trainer.main_ppo import TaskRunner
     
     class KLTaskRunner(TaskRunner):
+        def add_actor_rollout_worker(self, config):
+            """Override to use KLActorRolloutRefWorker for density extraction."""
+            import ray
+            from verl.single_controller.ray import RayWorkerGroup
+            from verl.workers.kl_fsdp_workers import KLActorRolloutRefWorker
+            from verl.trainer.ppo.ray_trainer import Role
+            
+            actor_rollout_cls = KLActorRolloutRefWorker
+            ray_worker_group_cls = RayWorkerGroup
+            self.role_worker_mapping[Role.ActorRollout] = ray.remote(actor_rollout_cls)
+            return actor_rollout_cls, ray_worker_group_cls
+
         def run(self, config):
             import os
             import socket
